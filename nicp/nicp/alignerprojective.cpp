@@ -32,6 +32,7 @@ namespace nicp {
     struct timeval tvStart, tvEnd;
     gettimeofday(&tvStart, 0);
 
+    // cfp->
     // The current points are seen from the frame of the sensor
     _projector->setTransform(_currentSensorOffset);
     _projector->project(cfp->currentIndexImage(),
@@ -65,34 +66,34 @@ namespace nicp {
        ************************************************************************/
       Eigen::Isometry3f invT = _T.inverse();
       for(int k = 0; k < _innerIterations; k++) {
-	invT.matrix().block<1, 4>(3, 0) << 0.0f, 0.0f, 0.0f, 1.0f;
-	Matrix6f H;
-	Vector6f b;
+        invT.matrix().block<1, 4>(3, 0) << 0.0f, 0.0f, 0.0f, 1.0f;
+        Matrix6f H;
+        Vector6f b;
 
-	_linearizer->setT(invT);
-	_linearizer->update();
-	H = _linearizer->H();
-	b = _linearizer->b();
-	H += Matrix6f::Identity() * _lambda;
+        _linearizer->setT(invT);
+        _linearizer->update();
+        H = _linearizer->H();
+        b = _linearizer->b();
+        H += Matrix6f::Identity() * _lambda;
 
-	// Add the priors
-	for(size_t j = 0; j < _priors.size(); j++) {
-	  const SE3Prior *prior = _priors[j];
-	  Vector6f priorError = prior->error(invT);
-	  Matrix6f priorJacobian = prior->jacobian(invT);
-	  Matrix6f priorInformationRemapped = prior->errorInformation(invT);
+        // Add the priors
+        for(size_t j = 0; j < _priors.size(); j++) {
+          const SE3Prior *prior = _priors[j];
+          Vector6f priorError = prior->error(invT);
+          Matrix6f priorJacobian = prior->jacobian(invT);
+          Matrix6f priorInformationRemapped = prior->errorInformation(invT);
 
-	  Matrix6f Hp = priorJacobian.transpose() * priorInformationRemapped * priorJacobian;
-	  Vector6f bp = priorJacobian.transpose() * priorInformationRemapped * priorError;
+          Matrix6f Hp = priorJacobian.transpose() * priorInformationRemapped * priorJacobian;
+          Vector6f bp = priorJacobian.transpose() * priorInformationRemapped * priorError;
 
-	  H += Hp;
-	  b += bp;
-	}
+          H += Hp;
+          b += bp;
+        }
 
-	Vector6f dx = H.ldlt().solve(-b);
-	
-	Eigen::Isometry3f dT = v2t(dx);
-	invT = dT * invT;
+        Vector6f dx = H.ldlt().solve(-b);
+        
+        Eigen::Isometry3f dT = v2t(dx);
+        invT = dT * invT;
       }
 
       _T = invT.inverse();

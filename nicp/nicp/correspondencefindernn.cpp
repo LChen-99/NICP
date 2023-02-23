@@ -1,3 +1,11 @@
+/*
+ * @Author: LuoChen 1425523063@qq.com
+ * @Date: 2023-02-02 09:56:53
+ * @LastEditors: LuoChen 1425523063@qq.com
+ * @LastEditTime: 2023-02-23 14:06:08
+ * @FilePath: /nicp/nicp/nicp/correspondencefindernn.cpp
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #include "correspondencefindernn.h"
 
 namespace nicp {
@@ -49,7 +57,7 @@ namespace nicp {
       _current_matrix = flann::Matrix<float> (&_current_points[0],
 					      currentScene.points().size(),
 					      6);
-      _index = new flann::Index< flann::L2<float> >(_current_matrix, flann::KDTreeIndexParams());
+      _index = new flann::Index< flann::L2<float> >(_current_matrix, flann::KDTreeIndexParams(1));
       _index->buildIndex();
       _model2linear(_reference_points, referenceScene, _normal_scaling);
       _reference_matrix = flann::Matrix<float> (&_reference_points[0],
@@ -69,30 +77,37 @@ namespace nicp {
    void CorrespondenceFinderNN::compute(const Cloud &referenceScene, const Cloud &currentScene, Eigen::Isometry3f T) {
       _model2linear(_reference_points, referenceScene, _normal_scaling, T);
 
-      flann::SearchParams params(16);
+      flann::SearchParams params;
       params.cores = 8;
+      // std::chrono::steady_clock::time_point start_t, end_t;
+      // start_t = std::chrono::steady_clock::now();
+      
       _index->radiusSearch(_reference_matrix, _indices_matrix, _distances_matrix,
-			   _squaredThreshold, flann::SearchParams(16));
+													_squaredThreshold, params);
+      // end_t = std::chrono::steady_clock::now();
+      // cout << "radiusSearch cost " << std::chrono::duration_cast<std::chrono::microseconds>(end_t - start_t).count() << "us" << endl;
+  
+      
 
       _correspondences.clear();
       _numCorrespondences = 0;
       for(size_t ridx = 0; ridx < _indices_matrix.rows; ++ridx) {
-	int* currentIndexPtr = _indices_matrix.ptr() + (ridx * _knn);
+	      int* currentIndexPtr = _indices_matrix.ptr() + (ridx * _knn);
         Eigen::Vector3f rn = T.linear() * referenceScene.normals()[ridx].head<3>();
         Eigen::Vector3f rp = T * referenceScene.points()[ridx].head<3>();
-	for(size_t j = 0; j < _indices_matrix.cols; ++j) {
-	   int cidx = *currentIndexPtr;
-	   currentIndexPtr++;
-	   if(cidx < 0) { continue; }
-	   const Eigen::Vector3f& cn = currentScene.normals()[cidx].head<3>();
-	   const Eigen::Vector3f& cp = currentScene.points()[cidx].head<3>();
-	   if(!_demotedToGICP && (rn.squaredNorm() == 0.0f || cn.squaredNorm() == 0.0f)) { continue; }
-	   if((rp - cp).squaredNorm() > _squaredThreshold) { continue; }
-	   if(isNan(cn) || isNan(rn)) { continue; }
-	   if(!_demotedToGICP && rn.dot(cn) < _inlierNormalAngularThreshold) { continue; }
-	   _correspondences.push_back(Correspondence(ridx, cidx));
-	   _numCorrespondences++;
-	}
+				for(size_t j = 0; j < _indices_matrix.cols; ++j) {
+					int cidx = *currentIndexPtr;
+					currentIndexPtr++;
+					if(cidx < 0) { continue; }
+					const Eigen::Vector3f& cn = currentScene.normals()[cidx].head<3>();
+					const Eigen::Vector3f& cp = currentScene.points()[cidx].head<3>();
+					if(!_demotedToGICP && (rn.squaredNorm() == 0.0f || cn.squaredNorm() == 0.0f)) { continue; }
+					if((rp - cp).squaredNorm() > _squaredThreshold) { continue; }
+					if(isNan(cn) || isNan(rn)) { continue; }
+					if(!_demotedToGICP && rn.dot(cn) < _inlierNormalAngularThreshold) { continue; }
+					_correspondences.push_back(Correspondence(ridx, cidx));
+					_numCorrespondences++;
+				}
       }
    }
 

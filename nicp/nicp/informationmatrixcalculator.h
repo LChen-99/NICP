@@ -170,4 +170,75 @@ namespace nicp {
 			 const NormalVector &imageNormals);
   };
 
+
+    /** \class PointInformationMatrixCalculator informationmatrixcalculator.h "informationmatrixcalculator.h"
+   *  \brief Class for computation of information matrices of points.
+   *  
+   *  This class allows to compyte the information matrices associated to the points of a point cloud.
+   */
+  class PointInformationMatrixCalculator2d : virtual public InformationMatrixCalculator {
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
+    /**
+     *  Empty constructor.
+     *  This constructor creates a PointInformationMatrixCalculator with default values for all its attributes.
+     */
+    PointInformationMatrixCalculator2d() : InformationMatrixCalculator() {
+      _flatInformationMatrix.diagonal() = Normal(Eigen::Vector3f(1.0f, 1000.0f, 1.0f));
+      _nonFlatInformationMatrix.diagonal() = Normal(Eigen::Vector3f(1.0f, 0.001f, 1.0f));
+      _curvatureThreshold = 0.02f;
+    }
+
+    /**
+     *  Destructor.
+     */
+    virtual ~PointInformationMatrixCalculator2d() {}
+
+    /**
+     *  Method that computes the InformationMatrixVector associated to the points given the point properties and normals.
+     *  @param informationMatrix is a reference to the InformationMAtrixVector that will contains the computed information matrices.
+     *  @param statsVector is the vector containing the properties of the points.
+     *  @param imageNormals is the vector of normals associated to the point cloud.
+     */
+    virtual void compute(InformationMatrixVector &informationMatrix,
+			 const StatsVector &statsVector,
+			 const NormalVector &imageNormals);
+  };
+
+  /** \class NormalInformationMatrixCalculator informationmatrixcalculator.h "informationmatrixcalculator.h"
+   *  \brief Class for computation of information matrices of normals.
+   *  
+   *  This class allows to compyte the information matrices associated to the normals of a point cloud.
+   */
+  class NormalInformationMatrixCalculator2d : virtual public InformationMatrixCalculator {
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
+    /**
+     *  Empty constructor.
+     *  This constructor creates a NormalInformationMatrixCalculator with default values for all its attributes.
+     */
+    NormalInformationMatrixCalculator2d() : InformationMatrixCalculator() {
+       _flatInformationMatrix.diagonal() = Normal(Eigen::Vector3f(0.0f, 1000.0f, 0.001f));
+       // _flatInformationMatrix.diagonal() = Normal(Eigen::Vector3f(100000.0f, 0.00001f, 100000.0f));
+      _nonFlatInformationMatrix.diagonal() = Normal(Eigen::Vector3f(0.0f, 1.0f, 1.0f));
+      _curvatureThreshold = 0.02f;
+    }
+
+    /**
+     *  Destructor.
+     */
+    virtual ~NormalInformationMatrixCalculator2d() {}
+
+    /**
+     *  Method that computes the InformationMatrixVector associated to the normals given the point properties and normals.
+     *  @param informationMatrix is a reference to the InformationMAtrixVector that will contains the computed information matrices.
+     *  @param statsVector is the vector containing the properties of the points.
+     *  @param imageNormals is the vector of normals associated to the point cloud.
+     */
+    virtual void compute(InformationMatrixVector &informationMatrix,
+			 const StatsVector &statsVector,
+			 const NormalVector &imageNormals);
+  };
 }

@@ -29,7 +29,7 @@ namespace nicp {
       T.matrix().block<1, 4>(3, 0) << 0.0f, 0.0f, 0.0f, 1.0f;
       _numCorrespondences = 0;
       if((int)_correspondences.size() != _referenceIndexImage.rows * _referenceIndexImage.cols)
-	 _correspondences.resize(_referenceIndexImage.rows * _referenceIndexImage.cols);
+	 	_correspondences.resize(_referenceIndexImage.rows * _referenceIndexImage.cols);
 
       float minCurvatureRatio = 1.0f / _inlierCurvatureRatioThreshold;
       float maxCurvatureRatio = _inlierCurvatureRatioThreshold;
@@ -105,13 +105,13 @@ namespace nicp {
       // Assemble the solution
       int k = 0;
       for(int t = 0; t < numThreads; t++) {
-	 for (int i=localOffset[t]; i < localCorrespondenceIndex[t]; i++)
-	    _correspondences[k++] = _correspondences[i];
+		for (int i=localOffset[t]; i < localCorrespondenceIndex[t]; i++)
+			_correspondences[k++] = _correspondences[i];
       }
       _numCorrespondences = k;
 
       for(size_t i = _numCorrespondences; i < _correspondences.size(); i++)
-	 _correspondences[i] = Correspondence();
+	 	_correspondences[i] = Correspondence();
    }
 
 

@@ -116,7 +116,7 @@ namespace nicp {
       Eigen::Matrix4f Tt = T.transpose();
       InformationMatrix *t = &(*this)[0];
       for (size_t i = 0; i < size(); i++, t++) {
-	*t = T * (*t) * Tt;
+	      *t = T * (*t) * Tt;
       }
     }
 
