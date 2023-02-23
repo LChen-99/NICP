@@ -2,7 +2,7 @@
  * @Author: LuoChen 1425523063@qq.com
  * @Date: 2023-02-16 19:41:16
  * @LastEditors: LuoChen 1425523063@qq.com
- * @LastEditTime: 2023-02-23 14:22:29
+ * @LastEditTime: 2023-02-23 17:38:54
  * @FilePath: /nicp/nicp/nicp/pclclouconverter.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -30,7 +30,7 @@ namespace nicp{
 			PointInformationMatrixCalculator2d *_pointInformationMatrixCalculator = 0,
 			NormalInformationMatrixCalculator2d *_normalInformationMatrixCalculator = 0,
       float _radius = 0.5,
-      int _minPoints = 10);
+      int _minPoints = 30);
 		
     virtual ~CloudConverter() {}
 
